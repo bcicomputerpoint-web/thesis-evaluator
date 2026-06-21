@@ -1,0 +1,78 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function getRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isScholar() {
+      return isSignedIn() && getRole() == 'scholar';
+    }
+
+    function isSupervisor() {
+      return isSignedIn() && getRole() == 'supervisor';
+    }
+
+    function isRACMember() {
+      return isSignedIn() && getRole() == 'rac_member';
+    }
+
+    function isDRCAdmin() {
+      return isSignedIn() && getRole() == 'drc_admin';
+    }
+
+    // ── Users ─────────────────────────────────────────────────────
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isRACMember() || isDRCAdmin();
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid) || isDRCAdmin();
+      allow delete: if isDRCAdmin();
+    }
+
+    // ── Evaluations ───────────────────────────────────────────────
+    match /evaluations/{evalId} {
+      allow read: if isSignedIn() && (
+        resource.data.uid == request.auth.uid ||
+        isSupervisor() ||
+        isRACMember() ||
+        isDRCAdmin()
+      );
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if isSignedIn() && (
+        (resource.data.uid == request.auth.uid && resource.data.status in ['draft', 'in_progress']) ||
+        (isSupervisor() && request.resource.data.keys().hasOnly(['supervisorNotes', 'updatedAt'])) ||
+        (isRACMember() && request.resource.data.keys().hasOnly(['racReview', 'updatedAt'])) ||
+        isDRCAdmin()
+      );
+      allow delete: if isDRCAdmin();
+    }
+
+    // ── Universities ──────────────────────────────────────────────
+    match /universities/{uniId} {
+      allow read: if isSignedIn();
+      allow write: if isDRCAdmin();
+    }
+
+    // ── Reports ───────────────────────────────────────────────────
+    match /reports/{reportId} {
+      allow read: if isSignedIn() && (
+        resource.data.uid == request.auth.uid ||
+        isSupervisor() ||
+        isRACMember() ||
+        isDRCAdmin()
+      );
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isDRCAdmin();
+    }
+  }
+}
