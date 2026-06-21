@@ -93,7 +93,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Evaluations list */}
-        <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: "#7C8FA8", textTransform: "uppercase", letterSpacing: 0.8, fontSize: 11 }}>
+        <h2 style={{ fontSize: 11, fontWeight: 700, marginBottom: 14, color: "#7C8FA8", textTransform: "uppercase", letterSpacing: 0.8 }}>
           {loadingEvals ? "Loading…" : `Your Evaluations (${evaluations.length})`}
         </h2>
 
