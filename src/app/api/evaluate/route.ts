@@ -17,7 +17,7 @@ async function callClaude(prompt: string, pdfBase64?: string): Promise<string> {
   const content: any[] = [];
   if (pdfBase64 && pdfBase64.length > 100) content.push({ type: "document", source: { type: "base64", media_type: "application/pdf", data: pdfBase64 } });
   content.push({ type: "text", text: prompt });
-  const msg = await client.messages.create({ model: "claude-sonnet-4-6", max_tokens: 1000, messages: [{ role: "user", content }] });
+  const msg = await client.messages.create({ model: "claude-sonnet-4-6", max_tokens: 4000, messages: [{ role: "user", content }] });
   return msg.content.map((b: any) => (b.type === "text" ? b.text : "")).join("");
 }
 
@@ -64,3 +64,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err.message || "Server error", stack: err.stack?.substring(0, 300) }, { status: 500 });
   }
 }
+
