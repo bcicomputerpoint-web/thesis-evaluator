@@ -1,4 +1,4 @@
-/** @type {import('next').NextConfig} */
+﻿/** @type {import("next").NextConfig} */
 const nextConfig = {
   output: "standalone",
   images: {
@@ -8,8 +8,13 @@ const nextConfig = {
     ],
   },
   env: {
-    NEXT_PUBLIC_APP_NAME: "PhD Thesis Evaluator — Onusandhan",
+    NEXT_PUBLIC_APP_NAME: "Onusandhan PhD Thesis Evaluator",
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
   },
 };
 
