@@ -241,30 +241,20 @@ export default function EvaluatePage() {
     return await getDownloadURL(storageRef);
   };
 
-  // Run AI analysis
   const runAnalysis = async () => {
     if (!user) return;
     setAiLoading(true); setAiError("");
     try {
-      // Save/create evaluation first
       const token = await user.getIdToken();
-      let currentId = evalId;
-      if (!currentId) {
-        const saveRes = await fetch("/api/save-evaluation", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ status: "in_progress", engine, meta, answers, score, details, category: vrd.cat }) });
-        const saveData = await saveRes.json();
-        currentId = saveData.id;
-        setEvalId(currentId);
-      }
-
-      // Upload PDF if present
-      if (pdfFile && currentId) await uploadPdf(currentId);
-
-      // Call AI
       const res = await fetch("/api/evaluate", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ engine, meta, answers, score, details, evaluationId: currentId }),
+        body: JSON.stringify({ engine, meta, answers, score, details }),
       });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Server error ${res.status}: ${text.substring(0, 200)}`);
+      }
       const data = await res.json();
       if (!data.success) throw new Error(data.error || "AI analysis failed");
       setAiResult(data.result);
@@ -566,4 +556,5 @@ export default function EvaluatePage() {
 
   return null;
 }
+
 
